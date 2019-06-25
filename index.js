@@ -12,7 +12,6 @@ function broadcast(team) {
     teams[team].forEach((ws) => {
         ws.send(score);
     });
-    console.log('team ' + team + ' score is ' + score);
 }
 
 app.ws('/:team/:user', (ws, req) => {
