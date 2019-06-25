@@ -28,6 +28,7 @@ app.ws('/:team/:user', (ws, req) => {
     console.log('user ' + user + ' joined team ' + team);
     scores[team][user] = 0;
     ws.on('message', (msg) => {
+        if (msg === 'ping') return;
         scores[team][user] = Number(msg);
         broadcast(team);
     });
