@@ -43,4 +43,4 @@ app.ws('/:team/:user', (ws, req) => {
     });
 });
 
-app.listen(6558);
+app.listen(process.env.PORT || 6558);
