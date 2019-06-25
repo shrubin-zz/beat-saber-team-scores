@@ -1,0 +1,16 @@
+{
+    "name": "beat-saber-team-scores",
+    "version": "0.0.1",
+    "description": "Beat Saber Team Scores",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/shrubin/beat-saber-team-scores.git"
+    },
+    "dependencies": {
+        "express": "^4.14.0",
+        "express-ws": "^4.0.0"
+    }
+}
