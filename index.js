@@ -3,15 +3,23 @@ var expressWs = require('express-ws')(app);
 
 var teams = {};
 var scores = {};
+var viewers = new Set([]);
+
+function view() {
+    viewers.forEach((ws) => {
+        ws.send(JSON.stringify(scores));
+    });
+}
 
 function broadcast(team) {
-    var score = 0;
+    var total = 0;
     for (var user in scores[team]) {
-        score += scores[team][user];
+        total += scores[team][user];
     }
     teams[team].forEach((ws) => {
-        ws.send(score);
+        ws.send(total);
     });
+    view();
 }
 
 app.ws('/:team/:user', (ws, req) => {
@@ -20,7 +28,7 @@ app.ws('/:team/:user', (ws, req) => {
     if (team in teams) {
         teams[team].add(ws);
     } else {
-        console.log("team " + team + " joined");
+        console.log('team ' + team + ' joined');
         teams[team] = new Set([ws]);
         scores[team] = {};
     }
@@ -40,8 +48,21 @@ app.ws('/:team/:user', (ws, req) => {
             console.log('team ' + team + ' left');
             delete teams[team];
             delete scores[team];
+            view();
+        } else {
+            broadcast(team);
         }
     });
+});
+
+app.ws('/', (ws, req) => {
+    console.log('viewer joined');
+    viewers.add(ws);
+    ws.on('close', () => {
+        console.log('viewer left');
+        viewers.delete(ws);
+    });
+    view();
 });
 
 app.listen(process.env.PORT || 6558);
