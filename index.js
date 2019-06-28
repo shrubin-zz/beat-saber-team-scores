@@ -7,6 +7,9 @@ var viewers = new Set([]);
 
 function view() {
     viewers.forEach((ws) => {
+        console.log(ws)
+        console.log(ws.readyState)
+        console.log(WebSocket.OPEN)
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify(scores));
         }
@@ -19,6 +22,9 @@ function broadcast(team) {
         total += scores[team][user];
     }
     teams[team].forEach((ws) => {
+        console.log(ws)
+        console.log(ws.readyState)
+        console.log(WebSocket.OPEN)
         if (ws.readyState === WebSocket.OPEN) {
             ws.send(total);
         }
