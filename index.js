@@ -5,12 +5,32 @@ var teams = {};
 var scores = {};
 var viewers = new Set([]);
 
+function leaveView(ws) {
+    console.log('viewer left');
+    viewers.delete(ws);
+}
+
 function view() {
     viewers.forEach((ws) => {
         if (ws.readyState === ws.OPEN) {
             ws.send(JSON.stringify(scores));
+        } else if (ws.readyState === ws.CLOSED) {
+            leaveView(ws); 
         }
     });
+}
+
+function leave(ws, team, user) {
+    console.log('user ' + user + ' from team ' + team + ' left');
+    teams[team].delete(ws);
+    delete scores[team][user];
+    if (teams[team].size === 0) {
+        console.log('team ' + team + ' left');
+        delete teams[team];
+        delete scores[team];
+        return false;
+    }
+    return true;
 }
 
 function broadcast(team) {
@@ -21,6 +41,8 @@ function broadcast(team) {
     teams[team].forEach((ws) => {
         if (ws.readyState === ws.OPEN) {
             ws.send(total);
+        } else if (ws.readyState === ws.CLOSED) {
+            leave(ws, team, user);
         }
     });
     view();
@@ -45,16 +67,10 @@ app.ws('/:team/:user', (ws, req) => {
         broadcast(team);
     });
     ws.on('close', () => {
-        console.log('user ' + user + ' from team ' + team + ' left');
-        teams[team].delete(ws);
-        delete scores[team][user];
-        if (teams[team].size === 0) {
-            console.log('team ' + team + ' left');
-            delete teams[team];
-            delete scores[team];
-            view();
-        } else {
+        if (leave(ws, team, user)) {
             broadcast(team);
+        } else {
+            view();
         }
     });
 });
@@ -63,8 +79,7 @@ app.ws('/', (ws, req) => {
     console.log('viewer joined');
     viewers.add(ws);
     ws.on('close', () => {
-        console.log('viewer left');
-        viewers.delete(ws);
+        leaveView(ws);
     });
     view();
 });
